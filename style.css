@@ -1,0 +1,56 @@
+.dot {
+  opacity: 0.5;
+  stroke: black;
+}
+
+#tooltip {
+  position: absolute;
+  width: auto;
+  height: auto;
+  padding: 5px;
+  font: 12px sans-serif;
+  background: lightsteelblue;
+  border: 0px;
+  border-radius: 8px;
+  pointer-events: none;
+  opacity: 0;
+}
+
+text {
+  font-size: 14px;
+  font-family: sans-serif;
+}
+
+.desc {
+  overflow-x: scroll;
+}
+
+.tick text {
+  padding: 5px;
+  font-size: 2em;
+  fill: #635f50;
+}
+
+.tick line {
+  stroke: #c0c0bb;
+}
+
+.label {
+  font-size: 2em;
+  fill: #be8883;
+}
+
+#title {
+  font-size: 3.2em;
+  fill: #635f50;
+}
+
+#legend {
+  font-size: 2.2em;
+  fill: #635f50;
+}
+
+.dotLabel {
+  font-size: 0.7em;
+  fill: #635f50;
+}

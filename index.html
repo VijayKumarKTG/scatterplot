@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>D3 Bar Chart: Showing GDP</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <svg width="1080" height="890"></svg>
+    <div id="tooltip"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.16.0/d3.min.js"></script>
+    <script>
+      // Appending a svg element to a body element
+      const svg = d3.select('svg');
+
+      // Mostly used const
+      const width = +svg.attr('width');
+      const height = +svg.attr('height');
+      const jitterValue = 8;
+      const radius = 9;
+
+      const render = (data) => {
+        const xValue = (d) => d.Year;
+        const yValue = (d) => d.Time;
+        const margin = { top: 100, right: 185, bottom: 100, left: 120 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        const title = 'Doping in Professional Bicycle Racing';
+        const legend = "35 Fastest times up Alpe d'Huez";
+        const yLabel = 'Time in (Minutes:Seconds)';
+        const xLabel = 'Year';
+
+        const xScale = d3
+          .scalePoint()
+          .domain(data.map(xValue))
+          .range([0, innerWidth])
+          .padding(0.7);
+
+        const yScale = d3
+          .scalePoint()
+          .domain(data.map(yValue))
+          .range([0, innerHeight])
+          .padding(0.7);
+
+        const g = svg
+          .append('g')
+          .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        g.append('text')
+          .attr('id', 'title')
+          .attr('transform', `translate(${innerWidth / 2},-60)`)
+          .attr('text-anchor', 'middle')
+          .text(title);
+
+        g.append('text')
+          .attr('id', 'legend')
+          .attr('transform', `translate(${innerWidth / 2},-20)`)
+          .attr('text-anchor', 'middle')
+          .text(legend);
+
+        const xAxis = d3.axisBottom(xScale).tickSize(-innerHeight);
+        const xAxisG = g
+          .append('g')
+          .call(xAxis)
+          .attr('transform', `translate(0,${innerHeight})`)
+          .attr('id', 'x-axis')
+          .append('text')
+          .attr('class', 'label')
+          .attr('transform', `translate(${innerWidth / 2},50)`)
+          .attr('text-anchor', 'middle')
+          .text(xLabel);
+
+        const yAxis = d3.axisLeft(yScale).tickSize(-innerWidth);
+        const yAxisG = g
+          .append('g')
+          .call(yAxis)
+          .attr('id', 'y-axis')
+          .append('text')
+          .attr('class', 'label')
+          .attr('transform', `translate(-90,${innerHeight / 2}) rotate(-90)`)
+          .attr('text-anchor', 'middle')
+          .text(yLabel);
+
+        const tooltip = d3.select('#tooltip').attr('opacity', '0');
+
+        const mouseover = function (d) {
+          tooltip.transition().duration(200).style('opacity', 0.9);
+          tooltip
+            .html(
+              `${d.Name} : ${d.Nationality}<br/>${d.Year} : ${d.Time}<br/>${d.Doping}`
+            )
+            .style('left', d3.event.pageX + 'px')
+            .style('top', d3.event.pageY - 28 + 'px');
+        };
+
+        const mouseleave = function (d) {
+          tooltip.transition().duration(500).style('opacity', 0);
+        };
+
+        const jitter = () => Math.random() * jitterValue;
+
+        g.selectAll('circle')
+          .data(data)
+          .enter()
+          .append('circle')
+          .attr('cy', (d) => yScale(yValue(d)) + jitter())
+          .attr('cx', (d, i) => xScale(xValue(d)) + jitter())
+          .attr('r', radius)
+          .attr('class', 'dot')
+          .on('mouseover', mouseover)
+          .on('mouseleave', mouseleave)
+          .attr('fill', (d) => (d.Doping === '' ? 'green' : 'red'))
+          .attr('data-xvalue', (d) => d.Year)
+          .attr('data-yvalue', (d) => d.dateTime);
+
+        const ndopingDot = g
+          .append('g')
+          .attr(
+            'transform',
+            `translate(${innerWidth + 10},${innerHeight / 2})`
+          );
+        ndopingDot
+          .append('text')
+          .attr('class', 'dotLabel')
+          .text('No Doping Allegations');
+        ndopingDot
+          .append('circle')
+          .attr('cx', '120')
+          .attr('cy', '-5')
+          .attr('r', radius)
+          .attr('fill', 'green')
+          .style('opacity', '0.5');
+
+        const dopingDot = g
+          .append('g')
+          .attr(
+            'transform',
+            `translate(${innerWidth + 10},${innerHeight / 2 + 20})`
+          );
+        dopingDot
+          .append('text')
+          .attr('class', 'dotLabel')
+          .text('Riders With Doping Allegations');
+        dopingDot
+          .append('circle')
+          .attr('cx', '160')
+          .attr('cy', '-5')
+          .attr('r', radius)
+          .attr('fill', 'red')
+          .style('opacity', '0.5');
+      };
+
+      // Fetching data from external source
+      let url =
+        'https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/cyclist-data.json';
+      fetch(url)
+        .then((res) => res.json())
+        .then((data) => {
+          let min, sec;
+          let date = new Date();
+          data.forEach((d) => {
+            [min, sec] = d.Time.split(':');
+            date.setMinutes(min);
+            date.setSeconds(sec);
+            d.dateTime = date.toUTCString();
+          });
+          console.log(data);
+          render(data);
+        })
+        .catch((e) => console.log(e));
+    </script>
+  </body>
+</html>
